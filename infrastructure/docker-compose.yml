@@ -1,20 +1,23 @@
 version: '2.1'
 services:
 ######################################################
-# MYSQL DATABASE SERVICE
-######################################################
-  mysql-development:
-      container_name: mysql
-      image: mysql:8.0.17
-      environment:
-        MYSQL_ROOT_PASSWORD: helloworld
-        MYSQL_DATABASE: my_company
-      ports:
-        - "3308:3306"
-      
-######################################################
 # DATABASE SERVICE
 ######################################################
+  mysql:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      secure_file_priv: /tmp
+    volumes:
+      - ./csv:/tmp
+    ports:
+      - "3306:3306"
+
   postgres:
     build: './docker/postgres'
     restart: always
@@ -263,9 +266,3 @@ services:
 ######################################################
 # NETWORK
 ######################################################
-
-# Change name of default network otherwise URI invalid for HIVE
-# because of the _ contained by default network
-networks:
-  default:
-    name: sparketl-network
