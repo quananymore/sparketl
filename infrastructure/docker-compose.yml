@@ -124,7 +124,7 @@ services:
     environment:
       - SERVICE_PRECONDITION=namenode:9870 datanode:9864 postgres:5432
     ports:
-      - "32761:9083"
+      - "32788:9083"
     healthcheck:
       test: [ "CMD", "nc", "-z", "hive-metastore", "9083" ]
       timeout: 45s

@@ -37,17 +37,38 @@ Generate the dummy car selling company data. Rules of thumbs:
 ### Generate 10 customers
 $ dgscli generate --data users --num 10
 
-# Generate 10 orders of 5 customers and 7 products
-$ dgscli generate --data order --num 10 --no_userid 5 --no_productid 7
+### Generate 10 orders of 5 customers and 7 products
+```dgscli generate --data order --num 10 --no_userid 5 --no_productid 7```
+
+### Import data
+
+1. Execute container mysql
+```
+docker exec -it <mysql-container-id> mysql -u root -p <password>
+```
+2. Check secure file prv
+```
+SHOW VARIABLES LIKE 'secure_file_priv';
+```
+This will show you the directory that is currently allowed.
 
 
-## To import a CSV file into a MySQL container running in Docker, you can use the mysql command-line client in the container. Here's an example of how you can do this:
-
-First, start a MySQL container using a command like this:
-
-python
-Copy
-docker run -d --name mysql-container -e MYSQL_ROOT_PASSWORD=my-secret-pw -p 3306:3306 mysql:latest
+3. Copy file into secure file to import
+```
+docker cp <path_from> <container_id>:/<path_target>
+```
+4. Execute sql file in mysql
+```
+source <path_file>
+```
+if you want to load csv file to table
+```commandline
+LOAD DATA INFILE '<file_path>'
+INTO TABLE orders
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS;
 ```
 
 This command starts a MySQL container named "mysql-container", sets the root password to "my-secret-pw", and maps the container's port 3306 to the host's port 3306.
@@ -60,13 +81,11 @@ This command copies the CSV file located at "/path/to/file.csv" on the host to t
 
 Connect to the MySQL container using the mysql command-line client:
 
-Copy
 docker exec -it mysql-container mysql -uroot -pmy-secret-pw
 This command runs the mysql client inside the "mysql-container" container and connects to the MySQL server as the root user with the password "my-secret-pw".
 
 In the MySQL client, create a database and a table that matches the structure of the CSV file:
 
-Copy
 CREATE DATABASE my_database;
 USE my_database;
 CREATE TABLE my_table (col1 INT, col2 VARCHAR(255), col3 DATE);

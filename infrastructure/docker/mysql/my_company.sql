@@ -1,3 +1,19 @@
+-- Create the inventory table
+CREATE TABLE inventory (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  quantity INT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create the users table
+CREATE TABLE users (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(255) NOT NULL,
+  firstname VARCHAR(255) NOT NULL,
+  lastname VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 -- Create the orders table
 CREATE TABLE orders (
   id INT PRIMARY KEY AUTO_INCREMENT,
@@ -9,7 +25,7 @@ CREATE TABLE orders (
 );
 
 -- Create the order_detail table
-CREATE TABLE order_detail (
+CREATE TABLE order_detail (       
   id INT PRIMARY KEY AUTO_INCREMENT,
   order_id INT NOT NULL,
   product_id INT NOT NULL,
@@ -28,23 +44,6 @@ CREATE TABLE products (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   inventory_id INT NOT NULL,
   FOREIGN KEY (inventory_id) REFERENCES inventory(id)
-);
-
--- Create the inventory table
-CREATE TABLE inventory (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  quantity INT NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
--- Create the users table
-CREATE TABLE users (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  username VARCHAR(255) NOT NULL,
-  firstname VARCHAR(255) NOT NULL,
-  lastname VARCHAR(255) NOT NULL,
-  email VARCHAR(255) UNIQUE,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create the user_detail table
