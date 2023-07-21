@@ -6,7 +6,7 @@ import random
 fake = Faker()
 
 # define the number of rows to generate
-num_rows = 100
+num_rows = 1000
 
 # generate fake data for the orders table
 orders_data = []

@@ -1,4 +1,4 @@
-
+sudo service docker start 
 docker exec -it 11f6e6ffa6bf /bin/bash
 docker rm -f $(docker ps -aq)
 Note:
@@ -75,7 +75,6 @@ This command starts a MySQL container named "mysql-container", sets the root pas
 
 Copy the CSV file to the container using a command like this:
 
-Copy
 docker cp /path/to/file.csv mysql-container:/tmp/file.csv
 This command copies the CSV file located at "/path/to/file.csv" on the host to the "/tmp" directory in the "mysql-container" container.
 
@@ -110,3 +109,11 @@ That's it! Your CSV file should now be imported into the MySQL container's datab
 
 ### Recreate only service when update docker-compose.yml file 
 docker-compose up -d --no-deps <service-name>
+
+### Note if you need to connect postgresql but want to test connection first
+
+export my_conn='postgresql://airflow:airflow@0.0.0.0:32769/airflow_db'
+
+uri connection: postgresql://<username>:<password>@<host>/<db_name
+
+Test connection:  pg_isready -d "postgresql://airflow:airflow@postgres:32769/airflow_db"

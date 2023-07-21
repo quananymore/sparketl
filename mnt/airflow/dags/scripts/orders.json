@@ -1,0 +1,10 @@
+{
+  "type": "struct",
+  "fields": [
+      {"name": "id", "type": "integer", "nullable": false,"metadata": {"description": "The ID of the item"}},
+      {"name": "user_id", "type": "integer", "nullable": true,"metadata": {"description": "The ID of the item"}},
+      {"name": "total", "type": "float", "nullable": true,"metadata": {"description": "The ID of the item"}},
+      {"name": "payment", "type": "string", "nullable": true,"metadata": {"description": "The ID of the item"}},
+      {"name": "creation_at", "type": "string", "nullable": true,"metadata": {"description": "The ID of the item"}}
+  ]
+}
