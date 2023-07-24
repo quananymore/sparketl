@@ -12,9 +12,9 @@ num_rows = 100000
 order_detail_data = []
 for i in range(1, num_rows+1):
     order_id = random.randint(1, 100)
-    product_id = random.randint(1, 50)
+    product_id = random.randint(1, 100)
     quantity = random.randint(1, 10)
-    price = round(random.uniform(10, 100), 2)
+    price = round(random.uniform(10000, 100000), 2)
     order_detail_data.append((i, order_id, product_id, quantity, price))
 
 # write the order_detail data to a CSV file

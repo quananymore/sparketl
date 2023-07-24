@@ -6,40 +6,36 @@ from pyspark.sql.types import StructType
 import json
 
 def main(tblName, executionDate):
-        # Read the schema from a JSON file
-    with open(f"/opt/airflow/dags/scripts/{tblName}.json") as f:
-        schema_json = f.read()
-    print(schema_json)
-    schema = StructType.fromJson(json.loads(schema_json))
-    # Parse the execution date into year, month and date
-    year, month, day = executionDate.split("-")
+    # Read the schema from a JSON file
 
-    # Create SparkSession
-    # spark = SparkSession \
-    # .builder \
-    # .appName("Ingestion from Postgres to HDFS") \
-    # .config("spark.sql.warehouse.dir", warehouse_location) \
-    # .enableHiveSupport() \
-    # .getOrCreate()
+    # with open(f"/opt/airflow/dags/scripts/{tblName}.json") as f:
+    #     schema_json = f.read()
+    # print(schema_json)
+    # schema = StructType.fromJson(json.loads(schema_json))
+
+    # Parse the execution date into year, month and date
+
+    year, month, day = executionDate.split("-")
 
     spark = SparkSession.builder.appName("Ingestion from Postgres to HDFS").getOrCreate()
 
     # Check if the table exists in HDFS
     tblLocation = f"hdfs://namenode:9000/datalake/{tblName}"
     
-    fs = spark.sparkContext._gateway.jvm.org.apache.hadoop.fs.FileSystem.get(spark.sparkContext._jsc.hadoopConfiguration())
-    exists = fs.exists(spark.sparkContext._gateway.jvm.org.apache.hadoop.fs.Path(tblLocation))
+    # fs = spark.sparkContext._gateway.jvm.org.apache.hadoop.fs.FileSystem.get(spark.sparkContext._jsc.hadoopConfiguration())
+    # exists = fs.exists(spark.sparkContext._gateway.jvm.org.apache.hadoop.fs.Path(tblLocation))
 
-    # Determine the query to use based on whether the table exists in HDFS
-    if exists:
-        print("****************EXISTS********************************")
-        df = spark.read.schema(schema).parquet(tblLocation)
-        record_id = df.agg(max("id")).head()[0]
-        tblQuery = f"(SELECT * FROM `{tblName}` where id > {record_id}) tmp"
-    else:
-        tblQuery = f"(SELECT * FROM `{tblName}`) tmp"
+    # # Determine the query to use based on whether the table exists in HDFS
+    # if exists:
+    #     print("****************EXISTS********************************")
+    #     df = spark.read.schema(schema).parquet(tblLocation)
+    #     record_id = df.agg(max("id")).head()[0]
+    #     tblQuery = f"(SELECT * FROM `{tblName}` where id > {record_id}) tmp"
+    # else:
+    #     tblQuery = f"(SELECT * FROM `{tblName}`) tmp"
 
     # Read data from PostgreSQL
+    
     # jdbcDF = spark.read.format("jdbc").option("url", "jdbc:postgresql://0.0.0.0:32769/airflow_db") \
     # .option("driver", "org.postgresql.Driver").option("dbtable", tblQuery) \
     # .option("user", "airflow").option("password", "airflow").load()
@@ -47,17 +43,11 @@ def main(tblName, executionDate):
     # Manually specify the schema of the Parquet file
     # Read the CSV file into a DataFrame
     # Let Spark know about the header and infer the Schema types!
-    jdbcDF = spark.read.csv(f"hdfs://namenode:9000/forex/{tblName}.csv",inferSchema=True,header=True)
-    # jdbcDF = spark.read.format("csv").option("header", "true").load(f"/opt/airflow/dags/files/data/{tblName}.csv")
-
-
+    jdbcDF = spark.read.csv(f"hdfs://namenode:9000/car_sales/{tblName}.csv",inferSchema=True,header=True)
 
     # Add year, month, and day columns and write to HDFS
     outputDF = jdbcDF.withColumn("year", lit(year)).withColumn("month", lit(month)).withColumn("day", lit(day))
     outputDF.write.partitionBy("year", "month", "day").mode("append").parquet(tblLocation)
-
-    # Stop the SparkSession
-    spark.stop()
 
 if __name__ == "__main__":
     # Parse command-line arguments
