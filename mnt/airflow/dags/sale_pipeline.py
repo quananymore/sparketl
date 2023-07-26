@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 import csv
 import requests
 import json
+from datetime import datetime
 
 default_args = {
     "owner": "airflow",
@@ -37,6 +38,9 @@ default_args = {
 # session.close()
 
 
+now = datetime.now()
+formatted_current_date = now.strftime('%Y-%m-%d')
+
 with DAG("sale_pipeline", start_date=datetime(2021, 1 ,1), 
     schedule_interval="@daily", default_args=default_args, catchup=False) as dag:
 
@@ -55,7 +59,8 @@ with DAG("sale_pipeline", start_date=datetime(2021, 1 ,1),
         task_id="creating_results_table",
         hive_cli_conn_id="hive_conn",
         hql="""
-            CREATE DATABASE reports; 
+            CREATE DATABASE IF NOT EXISTS reports WITH DBPROPERTIES('LOCATION'='warehouse/reports'); 
+
             CREATE EXTERNAL TABLE IF NOT EXISTS reports.daily_gross_revenue(
                 Make STRING,
                 Model STRING,
@@ -72,7 +77,7 @@ with DAG("sale_pipeline", start_date=datetime(2021, 1 ,1),
     ingestion_orders = SparkSubmitOperator(
         task_id="ingestion_orders",
         application="/opt/airflow/dags/scripts/ingestion.py",
-        application_args=['--tblName', 'orders', '--executionDate', '2023-07-07'],
+        application_args=['--tblName', 'orders', '--executionDate', formatted_current_date],
         conn_id="spark_conn",
         verbose=False
     )
@@ -80,7 +85,7 @@ with DAG("sale_pipeline", start_date=datetime(2021, 1 ,1),
     ingestion_order_details = SparkSubmitOperator(
         task_id="ingestion_order_details",
         application="/opt/airflow/dags/scripts/ingestion.py",
-        application_args=['--tblName', 'order_detail', '--executionDate', '2023-07-07'],
+        application_args=['--tblName', 'order_detail', '--executionDate', formatted_current_date],
         conn_id="spark_conn",
         verbose=False
     )
@@ -88,7 +93,7 @@ with DAG("sale_pipeline", start_date=datetime(2021, 1 ,1),
     ingestion_products = SparkSubmitOperator(
         task_id="ingestion_products",
         application="/opt/airflow/dags/scripts/ingestion.py",
-        application_args=['--tblName', 'products', '--executionDate', '2023-07-07'],
+        application_args=['--tblName', 'products', '--executionDate', formatted_current_date],
         conn_id="spark_conn",
         verbose=False
     )
@@ -96,7 +101,7 @@ with DAG("sale_pipeline", start_date=datetime(2021, 1 ,1),
     ingestion_inventories = SparkSubmitOperator(
         task_id="ingestion_inventories",
         application="/opt/airflow/dags/scripts/ingestion.py",
-        application_args=['--tblName', 'inventories', '--executionDate', '2023-07-07'],
+        application_args=['--tblName', 'inventories', '--executionDate', formatted_current_date],
         conn_id="spark_conn",
         verbose=False
     )
@@ -104,7 +109,7 @@ with DAG("sale_pipeline", start_date=datetime(2021, 1 ,1),
     transformation = SparkSubmitOperator(
         task_id="transformation",
         application="/opt/airflow/dags/scripts/transformation.py",
-        application_args=['--executionDate', '2023-07-07'],
+        application_args=['--executionDate', formatted_current_date],
         conn_id="spark_conn",
         verbose=False
     )
@@ -116,11 +121,9 @@ saving_sources.set_downstream(ingestion_order_details)
 saving_sources.set_downstream(ingestion_products)
 saving_sources.set_downstream(ingestion_inventories)
 
-# ingestion_orders.set_downstream(transformation)
-# ingestion_order_details.set_downstream(transformation)
-# ingestion_products.set_downstream(transformation)
-# ingestion_users.set_downstream(transformation)
-# ingestion_user_details.set_downstream(transformation)
-# ingestion_inventories.set_downstream(transformation)
+ingestion_orders.set_downstream(transformation)
+ingestion_order_details.set_downstream(transformation)
+ingestion_products.set_downstream(transformation)
+ingestion_inventories.set_downstream(transformation)
 
 # saving_sources >> (ingestion_orders,ingestion_order_details,ingestion_products,ingestion_users,ingestion_user_details,ingestion_inventories) >> transformation
